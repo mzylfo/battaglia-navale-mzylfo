@@ -116,3 +116,17 @@ export function placeFleet(gridSize, fleet){
 
     return ships; 
 }
+
+/* setupFleet --> genera e piazza una flotta per la griglia data. 
+   se il piazzamento fallisce per una flotta troppo densa, rigenera e riproviamo. */ 
+export function setupFleet(gridSize, numShips) {
+    for(let attempt=0; attempt<20; attempt++){
+        try{
+            const fleet = generateFleet(numShips); //dimensioni casuali generate
+            return placeFleet(gridSize, fleet); //proviamo a piazzare le navi -> se ci riesce subito usciamo
+        } catch{
+            //flotta troppo densa da piazzare -> non facciamo niente, il for riprova
+        }
+    }
+    throw new Error("Impossibile piazzare la flotta dopo vari tentativi"); 
+}
