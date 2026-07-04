@@ -130,3 +130,69 @@ export function setupFleet(gridSize, numShips) {
     }
     throw new Error("Impossibile piazzare la flotta dopo vari tentativi"); 
 }
+
+// cellIsIn --> scorriamo la lista e restituiamo 'true' se troviano r, c nella lista passata
+export function cellIsIn(r, c, list) {
+    for(let i=0; i<list.length; i++){
+        if(list[i].row === r && list[i].col === c)
+            return true;
+        }
+            return false; 
+    }
+
+/* evaluateShot --> dato il colpo (r,c), le navi e colpi già fatti,
+    - restituiamo {water, hit o sunk} per shipId*/
+export function evaluateShot(row, col, ships, shots){
+    //1) cerco la nave che contiene la cella colpita
+    let hitShip = null; 
+    let hitShipCells = null; 
+
+    for(let i=0; i<ships.length; i++){
+        const s = ships[i]; 
+
+        const cells = shipCells(s.size, s.start_row, s.start_col, s.orientation); 
+
+        if(cellIsIn(row, col, cells)){
+            hitShip = s; 
+            hitShipCells = cells; 
+        }
+    }
+
+    //2) nesuna nave in quella cella --> ritorniamo ACQUA
+    if(hitShip === null){
+        return { result: "water"}; 
+    }
+
+    //3) c'è una nave: è affondata? 
+    let sunk = true; //assumiamo che sia affondata
+    for(let k=0; k<hitShipCells.length; k++){ //controlliamo tutte le sue celle
+        const cell = hitShipCells[k]; 
+        const isCurrent = (cell.row === row && cell.col === col); //è la cella che sto colpendo ora? 
+
+        if(!isCurrent && !cellIsIn(cell.row, cell.col, shots)){ //la cella è diversa da quella che sto colpendo ora E non è mai stata colpita prima? 
+            sunk = false; //abbiamo trovato una cella ancora intatta --> quindi la nave non era affondata 
+        }
+    }
+
+    // 4) esito 
+    if(sunk) {
+        return {result: "sunk", shipId: hitShip.id}; 
+    }
+    return {result: "hit"}; 
+
+}
+
+//allShipsSunk --> true se tutte le celle di tutte le navi sono state colpite 
+export function allShipsSunk(ships, shots) {
+    for(let i=0; i<ships.length; i++){
+        const s = ships[i]; //prendiamo ogni singola nave
+        const cells = shipCells(s.size, s.start_row, s.start_col, s.orientation); //ritorniamo le colonne e righe che occupa
+
+        for(let k=0; k<cells.length; k++){ 
+            if(!cellIsIn(cells[k].row, cells[k].col, shots)){ //controlliamo: le celle delle navi sono nelle celle colpite? Se No, entriamo
+                return false; //trovata almeno una cella di nave che non è ancora stata colpita
+            }
+        }
+    }
+    return true; //nessuna cella di nave ancora da colpire è stata scoperta --> vittoria!!
+}

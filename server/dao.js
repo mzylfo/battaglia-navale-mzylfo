@@ -61,3 +61,69 @@ export const createShip = (gameId, ship) => {
   });
 }
 
+//GETSHIPS
+//Prende tutte le navi di una partita
+export const getShips = (gameId) => {
+    return new Promise ((resolve, reject) => {
+        const sql = "SELECT * FROM ships WHERE game_id = ?"; 
+
+        db.all(sql, [gameId], (err, rows) => { //db.all --> ritorna tante righe
+            if(err) reject(err); 
+            else resolve(rows); //rows = array di navi che può anche essere vuoto
+        });
+    }); 
+}
+
+//GETSHOTS
+//Prende gli shots di una partita
+export const getShots = (gameId) => {
+    return new Promise ((resolve, reject) => {
+        const sql = "SELECT * FROM shots WHERE game_id = ?"; 
+
+        db.all(sql, [gameId], (err, rows) => {
+            if(err) reject(err); 
+            else resolve(rows); //array di shots che può anche essere vuoto
+        }); 
+    }); 
+}
+
+//ADDSHOTS
+//salviamo un colpo con il suo esito 
+export const addShot = (gameId, shot) =>{
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO shots
+                    (game_id, row, col, result)
+                    VALUES (?, ?, ?, ?)`; 
+
+        db.run(sql, [gameId, shot.row, shot.col, shot.result], function(err){
+            if(err) reject(err); 
+            else resolve(this.lastID);
+        });
+    }); 
+}
+
+//UPDATEGAME
+//Aggiorna siluri rimasti e stato di una partita
+export const updateGame = (gameId, torpedoesLeft, status) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE games SET torpedoes_left = ?, status = ? WHERE id = ?"; 
+
+        db.run(sql, [torpedoesLeft, status, gameId], function(err) {
+            if(err) reject(err); 
+            else resolve(this.changes); //numero di righe che sono state modificate
+        }); 
+    }); 
+}
+
+//MARKSHIPSUNK
+//Andiamo a marcare una ship come affondata
+export const markShipSunk = (shipId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE ships SET sunk = 1 WHERE id = ?"; 
+
+        db.run(sql, [shipId], function(err){
+            if(err) reject(err); 
+            else resolve(this.changes); 
+        });
+    });
+}

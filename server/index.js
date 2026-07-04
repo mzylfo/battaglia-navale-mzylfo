@@ -3,8 +3,9 @@ import express from "express";
 import morgan from "morgan"; 
 import cors from "cors";
 
-import {DIFFICULTIES, setupFleet} from "./game_logic.js"; 
-import {createGame, createShip} from "./dao.js"; 
+import {DIFFICULTIES, setupFleet, cellIsIn, evaluateShot, allShipsSunk} from "./game_logic.js";
+import {createGame, createShip, getGame, getShips, getShots, addShot, markShipSunk, updateGame} from "./dao.js";
+
 
 // init express
 const app = new express();
@@ -67,6 +68,66 @@ app.post("/api/games", async (req, res) => {
   } catch(err){
     console.error(err); 
     res.status(500).json({error: "Cannot create the game"}); 
+  }
+}); 
+
+//POST /api/games/:id/shots - lanciamo un siluro 
+app.post("/api/games/:id/shots", async(req, res) => {
+  const gameId = req.params.id; 
+  const {row, col} = req.body; 
+
+  try{
+    //1) recupero la partita
+    const game = await getGame(gameId); 
+    if(game.error) return res.status(404).json(game); 
+    if(game.status !== "playing") return res.status(422).json({error: "Game already over"}); 
+
+    //2) valido la cella che sia dentro la griglia
+    if(row === undefined || col === undefined || row < 0 || row >= game.grid_size || col < 0 || col >= game.grid_size)
+      return res.status(422).json({error: "Invalid cell"}); 
+
+    //3) leggo navi e colpi
+    const ships = await getShips(gameId); 
+    const shots = await getShots(gameId); 
+
+    //4) controlliamo che non sia una cella già colpita prima
+    if(cellIsIn(row, col, shots)){
+      return res.status(422).json({error: "Cell already shot"}); 
+    }
+
+    //5) calcolo esito 
+    const outcome = evaluateShot(row, col, ships, shots);
+
+    //6) salvo il colpo 
+    await addShot(gameId, {row, col, result: outcome.result}); 
+
+    //7) se aggondata, segno la nave
+    if(outcome.result === "sunk"){
+      await markShipSunk(outcome.shipId); 
+    }
+
+    //8) aggiorno siluri e stato
+    let torpedoesLeft = game.torpedoes_left; 
+    if(outcome.result === "water") torpedoesLeft = torpedoesLeft - 1; 
+
+    shots.push({row, col}); //includiamo il colpo attuale x controllo vittoria
+    let status = "playing"; 
+    if(allShipsSunk(ships, shots)) status = "won"; //Se abbiamo colpito tutte le navi --> vittoria
+    else if (torpedoesLeft === 0) status = "lost"; //Se no, e non abbiamo siluri left --> perso 
+
+    await updateGame(gameId, torpedoesLeft, status); 
+
+    //9) rispondo solo se partita finita
+    const response = {result: outcome.result, torpedoesLeft, status};
+    if(status !== "playing"){
+      response.ships = ships.map((s) => ({
+        size: s.size, startRow: s.start_row, startCol: s.start_col, orientation: s.orientation
+      })); 
+    }
+    res.json(response); 
+  } catch (err) {
+    console.error(err); 
+    res.status(500).json({error: "Cannot process the shot"}); 
   }
 }); 
 
