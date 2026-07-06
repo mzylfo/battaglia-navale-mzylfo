@@ -2,16 +2,36 @@
 import express from "express";
 import morgan from "morgan"; 
 import cors from "cors";
+import passport from "passport"; 
+import LocalStrategy from "passport-local"; 
+import session from "express-session"; 
 
 import {DIFFICULTIES, setupFleet, cellIsIn, evaluateShot, allShipsSunk} from "./game_logic.js";
-import {createGame, createShip, getGame, getShips, getShots, addShot, markShipSunk, updateGame} from "./dao.js";
+import {createGame, createShip, getGame, getShips, getShots, addShot, markShipSunk, updateGame, getUser} from "./dao.js";
 
 
-// init express
+//init express
 const app = new express();
 const port = 3001;
 
-// middlware
+//Passport --> verifica username + password
+passport.use(new LocalStrategy(async function verify(username, password, cb){
+  const user = await getUser(username, password); 
+  if(!user)
+    return cb(null, false, "Incorrect username or password!"); 
+  return cb(null, user); 
+})); 
+
+passport.serializeUser((user, cb) => cb(null, user)); //cosa salviamo nella sessione? 
+passport.deserializeUser((user, cb) => cb(null, user)); //da ciò che è stato salvato, ricostruisco l'utente
+
+//middleware --> blocchiamo chi non è autenticato 
+const isLoggedIn = (req, res, next) => {
+  if(req.isAuthenticated()) return next(); 
+  return res.status(401).json({error: "Not authorized"});
+};
+
+//middlware
 app.use(express.json()); //leggeree il body JSON delle richieste
 app.use(morgan("dev")); //log delle richieste in console
 
@@ -22,8 +42,14 @@ const corsOptions = {
 }; 
 app.use(cors(corsOptions)); 
 
-//ROUTES 
+app.use(session({
+  secret: "segreto-battaglia-navale",
+  resave: false,
+  saveUninitialized: false,
+}));
+app.use(passport.authenticate("session"));
 
+//ROUTES 
 //POST /api/game --> creiamo una nuova partita (Casual per ora)
 app.post("/api/games", async (req, res) => {
   const {difficulty} = req.body; 
@@ -129,6 +155,22 @@ app.post("/api/games/:id/shots", async(req, res) => {
     console.error(err); 
     res.status(500).json({error: "Cannot process the shot"}); 
   }
+}); 
+
+//POST /api/sessions --> login
+app.post("/api/sessions", passport.authenticate("local"), (req, res) => {
+  res.status(201).json(req.user); 
+}); 
+
+//GET /api/sessions/current --> ritorniamo l'utente che è già loggato
+app.get("/api/sessions/current", (req, res) => {
+  if(req.isAuthenticated()) res.json(req.user); 
+  else res.status(401).json({error: "Not authenticated"}); 
+}); 
+
+//DELETE /api/sessions/current --> logout
+app.delete("/api/sessions/current", (req, res) => {
+  req.logout(() => res.end()); 
 }); 
 
 //avvio server

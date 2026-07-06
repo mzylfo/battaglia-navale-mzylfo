@@ -26,5 +26,38 @@ async function fireShot(gameId, row, col){
     return await response.json(); 
 }
 
-const API = {createGame, fireShot}; 
+//LOGIN: mandiamo username e password --> torniamo l'utente se ok
+async function logIn(credentials){
+    const response = await fetch(SERVER_URL+"/api/sessions", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "include",
+        body: JSON.stringify(credentials),
+    });
+
+    if(response.ok) return await response.json(); 
+    else throw new Error("Credenziali errate"); 
+}
+
+//GETUSERINFO: c'è già una sessione attiva? 
+async function getUserInfo(){
+    const response=await fetch(SERVER_URL+"/api/sessions/current", {
+        credentials: "include",
+    }); 
+    
+    const user = await response.json(); 
+    
+    if(response.ok) return user; 
+    else throw user; 
+}
+
+//LOGOUT
+async function logOut(){
+    await fetch(SERVER_URL+"/api/sessions/current", {
+        method: "DELETE",
+        credentials: "include",
+    }); 
+}
+
+const API = {createGame, fireShot, logIn, getUserInfo, logOut}; 
 export default API; 

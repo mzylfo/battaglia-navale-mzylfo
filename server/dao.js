@@ -2,6 +2,7 @@
 //In questo file possiamo trovare funzioni per leggere e scrivere nel database
 //È come un traduttore che ha funzioni per interfacciarsi con il db e restituisce oggetti JSON
 import sqlite from "sqlite3"; 
+import crypto from "crypto"; 
 
 //apriamo la connessione al file del database
 const db = new sqlite.Database("database.db", (err) => {
@@ -127,3 +128,32 @@ export const markShipSunk = (shipId) => {
         });
     });
 }
+
+//GETUSER
+//Verifichiamo l'email e password: torniamo l'utente se corretti, altrimenti false
+export const getUser = (email, password) =>{
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM users WHERE email = ?"; 
+
+        db.get(sql, [email], (err, row) => {
+            if(err){
+                reject(err); 
+            }
+            else if(row === undefined){
+                resolve(false); //email inesistente
+            }
+            else{
+                const user = {id: row.id, username: row.email, name: row.name};
+
+                //calcoliamo l'hash della password digitata usando il salt salvato
+                crypto.scrypt(password, row.salt, 16, (err, hashedPassword) => {
+                    if(err) reject(err); 
+                    if(!crypto.timingSafeEqual(Buffer.from(row.hash, "hex"), hashedPassword)) //usiamo timingSafeEqual per confrontare in tempo costante --> difesa contro timing attack
+                        resolve(false); //password sbagliata
+                    else
+                        resolve(user); //credenziali corrette
+                }); 
+            }
+        });
+    });
+};
