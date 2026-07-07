@@ -157,3 +157,57 @@ export const getUser = (email, password) =>{
         });
     });
 };
+
+//CREATETOURNAMENT
+//Crea un nuovo torneo e restituisce l'id generato
+export const createTournament = (code, createdAt) => {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO tournaments (code, created_at) VALUES (?, ?)"; 
+
+        db.run(sql, [code, createdAt], function(err){
+            if(err) reject(err); 
+            else resolve(this.lastID); //id del torneo appena creato 
+        }); 
+    }); 
+}; 
+
+//GETTOURNAMENTBYCODE
+//Trova un torneo dato il suo codice testuale
+export const getTournamentByCode = (code) => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM tournaments WHERE code = ?";
+
+        db.get(sql, [code], (err, row) => {
+            if(err) reject(err);
+            else if(row === undefined) resolve({error: "Tournament not found."});
+            else resolve(row);
+        });
+    });
+}
+
+//GETGAMEBYTOURNAMENT
+//Prendiamo una partita del torneo per copiare la disposizione delle navi 
+export const getGameByTournament = (tournamentId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM games WHERE tournament_id = ?"; 
+
+        db.get(sql, [tournamentId], (err, row) => {
+            if(err) reject(err); 
+            else if (row === undefined) resolve({error: "No game in this tournament"}); 
+            else resolve(row); 
+        }); 
+    }); 
+}
+
+//GETGAMEFORUSERINTOURNAMENT
+//Controlla se un utente ha GIA' una partita in un dato torneo --> così impediamo che un utente giochi più partite nello stesso torneo 
+export const getGameForUserInTournament = (userId, tournamentId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM games WHERE user_id = ? AND tournament_id = ?"; 
+
+        db.get(sql, [userId, tournamentId], (err, row) => {
+            if(err) reject(err); 
+            else resolve(row); //ritorniamo la partita (se esiste) oppure direttamente undefined se non ha ancora giocato 
+        });
+    }); 
+}

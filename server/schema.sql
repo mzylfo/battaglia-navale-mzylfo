@@ -14,7 +14,7 @@ CREATE TABLE users (
 CREATE TABLE games(
     id  INTEGER PRIMARY KEY AUTOINCREMENT, 
     user_id INTEGER, --NULL se la partita è in modalità Casual (anonima)
-    tournament_id INTEGER, --NULL se non è un torneo 
+    tournament_id INTEGER, -- NULL se non è un torneo 
     difficulty TEXT NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard')),
     grid_size   INTEGER NOT NULL , -- grandezza della griglia 
     torpedoes_total INTEGER NOT NULL, --siluri totali ed iniziali
@@ -47,4 +47,10 @@ CREATE TABLE shots (
     UNIQUE (game_id, row, col) -- nella stessa partita non possono esistere due colpi sulla stessa cella 
 ); 
 
--- Tabella: Tournaments!!! da implementare a testo consolidato 
+-- Tabella: Tournaments
+-- Ogni torneo viene identificato da un codice testuale che può essere usato per accedere alla partita
+CREATE TABLE tournaments ( 
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE, -- il codice condiviso
+    created_at TEXT NOT NULL  -- data con ora di creazione
+); 

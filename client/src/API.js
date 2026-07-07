@@ -26,6 +26,31 @@ async function fireShot(gameId, row, col){
     return await response.json(); 
 }
 
+//CREA TORNEO: crea un torneo solo per i loggati
+async function createTournament(difficulty){
+    const response = await fetch(SERVER_URL + "/api/tournaments", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "include",
+        body: JSON.stringify({difficulty}),
+    });
+    if(!response.ok) throw new Error("Errore nella creazione del torneo");
+    return await response.json();
+}
+
+//UNISCITI A TORNEO: invia un codice al server e ritorna la partita (se esiste)
+async function joinTournament(code){
+    const response = await fetch(SERVER_URL + "/api/tournaments/join", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "include",
+        body: JSON.stringify({code}),
+    });
+    const data = await response.json();
+    if(!response.ok) throw new Error(data.error || "Errore nell'unione al torneo");
+    return data;
+}
+
 //LOGIN: mandiamo username e password --> torniamo l'utente se ok
 async function logIn(credentials){
     const response = await fetch(SERVER_URL+"/api/sessions", {
@@ -59,5 +84,5 @@ async function logOut(){
     }); 
 }
 
-const API = {createGame, fireShot, logIn, getUserInfo, logOut}; 
+const API = {createGame, fireShot, createTournament, joinTournament, logIn, getUserInfo, logOut}; 
 export default API; 
