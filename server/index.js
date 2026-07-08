@@ -6,7 +6,7 @@ import passport from "passport";
 import LocalStrategy from "passport-local"; 
 import session from "express-session"; 
 
-import {DIFFICULTIES, setupFleet, cellIsIn, evaluateShot, allShipsSunk} from "./game_logic.js";
+import {DIFFICULTIES, setupFleet, cellIsIn, evaluateShot, allShipsSunk, shipCells} from "./game_logic.js";
 import {createGame, createShip, getGame, getShips, getShots, addShot, markShipSunk, updateGame, getUser,
         createTournament, getTournamentByCode, getGameByTournament, getGameForUserInTournament, getStats} from "./dao.js";
 
@@ -128,9 +128,12 @@ app.post("/api/games/:id/shots", async(req, res) => {
     //6) salvo il colpo 
     await addShot(gameId, {row, col, result: outcome.result}); 
 
-    //7) se aggondata, segno la nave
+    //7) se affondata, la segno e calcolo TUTTE le sue celle (per colorarle di rosso)
+    let sunkCells = null;
     if(outcome.result === "sunk"){
-      await markShipSunk(outcome.shipId); 
+      await markShipSunk(outcome.shipId);
+      const ship = ships.find((s) => s.id === outcome.shipId);
+      sunkCells = shipCells(ship.size, ship.start_row, ship.start_col, ship.orientation);
     }
 
     //8) aggiorno siluri e stato
@@ -146,6 +149,7 @@ app.post("/api/games/:id/shots", async(req, res) => {
 
     //9) rispondo solo se partita finita
     const response = {result: outcome.result, torpedoesLeft, status};
+    if(sunkCells) response.sunkCells = sunkCells;
     if(status !== "playing"){
       response.ships = ships.map((s) => ({
         size: s.size, startRow: s.start_row, startCol: s.start_col, orientation: s.orientation
