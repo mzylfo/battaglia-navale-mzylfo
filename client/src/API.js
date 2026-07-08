@@ -51,6 +51,15 @@ async function joinTournament(code){
     return data;
 }
 
+//STATISTICHE: tornano un array di righe 
+async function getStats(){ 
+    const response = await fetch(SERVER_URL + "/api/stats"); 
+
+    if(!response.ok)
+        throw new Error("Errore nel caricamento delle statistiche"); 
+    return await response.json(); 
+}
+
 //LOGIN: mandiamo username e password --> torniamo l'utente se ok
 async function logIn(credentials){
     const response = await fetch(SERVER_URL+"/api/sessions", {
@@ -84,5 +93,5 @@ async function logOut(){
     }); 
 }
 
-const API = {createGame, fireShot, createTournament, joinTournament, logIn, getUserInfo, logOut}; 
+const API = {createGame, fireShot, createTournament, joinTournament, getStats, logIn, getUserInfo, logOut}; 
 export default API; 

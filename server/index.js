@@ -8,7 +8,7 @@ import session from "express-session";
 
 import {DIFFICULTIES, setupFleet, cellIsIn, evaluateShot, allShipsSunk} from "./game_logic.js";
 import {createGame, createShip, getGame, getShips, getShots, addShot, markShipSunk, updateGame, getUser,
-        createTournament, getTournamentByCode, getGameByTournament, getGameForUserInTournament} from "./dao.js";
+        createTournament, getTournamentByCode, getGameByTournament, getGameForUserInTournament, getStats} from "./dao.js";
 
 
 //init express
@@ -275,6 +275,19 @@ app.post("/api/tournaments/join", isLoggedIn, async(req, res) => {
     res.status(500).json({error: "Cannot join the tournament!"});
   }
 });
+
+//GET /api/stats --> statistiche PUBBLICHE (anche anonimi)
+app.get("/api/stats", async(req, res) => {
+  try{
+    const stats = await getStats();
+    res.json(stats);
+  }
+  catch(err){
+    console.error(err);
+    res.status(500).json({error: "Cannot load stats"});
+  }
+});
+
 
 //POST /api/sessions --> login
 app.post("/api/sessions", passport.authenticate("local"), (req, res) => {

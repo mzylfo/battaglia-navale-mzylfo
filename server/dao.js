@@ -211,3 +211,25 @@ export const getGameForUserInTournament = (userId, tournamentId) => {
         });
     }); 
 }
+
+//GETSTATS
+//Statistiche per ogni utente e difficoltà: giocate, vinte, perse e percentuale di vittorie
+export const getStats = () => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT u.name AS name, g.difficulty AS difficulty,
+                            COUNT(*) AS total,
+                            SUM(CASE WHEN g.status = 'won'  THEN 1 ELSE 0 END) AS won,
+                            SUM(CASE WHEN g.status = 'lost' THEN 1 ELSE 0 END) AS lost,
+                            ROUND(SUM(CASE WHEN g.status = 'won' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS winRate
+                     FROM games g
+                     JOIN users u ON g.user_id = u.id
+                     WHERE g.status IN ('won', 'lost')
+                     GROUP BY g.user_id, g.difficulty
+                     ORDER BY u.name, g.difficulty`;
+
+        db.all(sql, [], (err, rows) => {
+            if(err) reject(err);
+            else resolve(rows); //ogni riga ha già total, won, lost, winRate
+        });
+    });
+}
