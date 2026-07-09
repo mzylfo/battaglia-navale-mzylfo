@@ -70,16 +70,19 @@ function App() {
     try {
       const res = await API.fireShot(game.gameId, row, col);
 
-      let newShots = [...shots, { row, col, result: res.result }];
-      //se ho affondato una nave, coloro come 'sunk' TUTTE le sue celle
-      if(res.sunkCells){
-        newShots = newShots.map((s) =>
-          res.sunkCells.some((c) => c.row === s.row && c.col === s.col)
-            ? { ...s, result: "sunk" }
-            : s
-        );
-      }
-      setShots(newShots);
+      //forma funzionale: il nuovo stato dipende da quello precedente
+      setShots((prevShots) => {
+        let newShots = [...prevShots, {row, col, result: res.result}];
+        //se ho affondato una nave, coloro come 'sunk' TUTTE le sue celle
+        if(res.sunkCells){
+          newShots = newShots.map((s) =>
+            res.sunkCells.some((c) => c.row === s.row && c.col === s.col)
+              ? { ...s, result: "sunk" }
+              : s
+          );
+        }
+        return newShots;
+      });
 
       setTorpedoesLeft(res.torpedoesLeft);
       setStatus(res.status);
