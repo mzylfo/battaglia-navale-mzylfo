@@ -74,7 +74,13 @@
 
 ## Main React Components
 
-- `App` (in `App.jsx`): componente radice dell'applicazione. Mantiene tutto lo stato del gioco (`game`, `shots`, `torpedoesLeft`, `status`, `revealedShips`) e dell'autenticazione (`loggedIn`, `user`). All'avvio controlla la sessione con un `useEffect`. Definisce le route con react-router (`/`, `/stats`, `/login`) e la navbar. Contiene i gestori principali: `startGame`/`startTournament`/`handleJoin` (creano o entrano in una partita chiamando le API e reimpostano lo stato tramite `beginGame`), `handleShoot` (lancia un siluro, aggiorna la griglia e colora l'intera nave affondata), `handleLogin`/`handleLogout`. Passa stato e funzioni ai componenti figli.
+- `App` (in `App.jsx`): componente radice dell'applicazione. Mantiene tutto lo stato del gioco (`game`, `shots`, `torpedoesLeft`, `status`, `revealedShips`) e dell'autenticazione (`loggedIn`, `user`). All'avvio controlla la sessione con un `useEffect`. Definisce le route con react-router (`/`, `/stats`, `/login`) e la navbar. Contiene i gestori principali: `startGame`/`startTournament`/`handleJoin` (creano o entrano in una partita chiamando le API e reimpostano lo stato tramite `beginGame`), `handleShoot` (lancia un siluro, aggiorna la griglia e colora l'intera nave affondata), `handleLogin`/`handleLogout`. Passa stato e funzioni alle pagine figlie.
+
+- `HomePage` (in `HomePage.jsx`): schermata della route `/`. Da utente anonimo mostra la scelta della difficoltà (Casual); da utente autenticato mostra la modalità Torneo (`TournamentSetup`).
+
+- `GamePage` (in `GamePage.jsx`): schermata di una partita in corso o terminata. Mostra il numero e le dimensioni delle navi, i siluri rimasti, la griglia (`Board`), la legenda e i messaggi di vittoria/sconfitta.
+
+- `LoginPage` (in `LoginPage.jsx`): pagina della route `/login`; racchiude il form di login (`LoginForm`) in una card centrata.
 
 - `Board` (in `Board.jsx`): riceve la partita corrente, la lista dei colpi e le navi rivelate. Costruisce la griglia NxN; per ogni cella determina lo stato controllando se è stata colpita (acqua/colpito/affondato), se appartiene a una nave rivelata (a fine partita) o se è vuota. Disegna un `Cell` per ogni posizione e inoltra i click con `onShoot`.
 
