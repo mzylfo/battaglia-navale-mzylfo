@@ -40,7 +40,6 @@ db.serialize(() => {
         db.run("INSERT INTO users(email, name, hash, salt) VALUES (?, ?, ?, ?)", [u.email, u.name, hash, salt]); 
 
         console.log(`Utente: ${u.email} - ${u.password}`); 
-        
     }
 
     //inserisco le partite finite (user_id ricavato dall'email con una subquery)
