@@ -1,6 +1,34 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/W4bhbCo5)
 # Exam #2: "Battaglia Navale"
-## Student: s361902 ZYLFO MATTEO 
+## Student: ZYLFO MATTEO
+
+## Come avviare il progetto
+
+**Prerequisiti:** [Node.js](https://nodejs.org/) (LTS) e npm.
+
+1. **Clona il repository:**
+   ```bash
+   git clone https://github.com/mzylfo/battaglia-navale-mzylfo.git
+   cd battaglia-navale-mzylfo
+   ```
+
+2. **Avvia il server** (in un terminale):
+   ```bash
+   cd server
+   npm install
+   node index.js
+   ```
+   Il server è disponibile su `http://localhost:3001`. In alternativa, per il riavvio automatico ad ogni modifica, si può usare `npx nodemon index.js`.
+
+3. **Avvia il client** (in un secondo terminale):
+   ```bash
+   cd client
+   npm install
+   npm run dev
+   ```
+   Apri il browser su `http://localhost:5173`.
+
+4. **Accedi con un utente di prova:** il database (`server/database.db`) è già precaricato con 3 utenti — le credenziali sono elencate nella sezione [Users Credentials](#users-credentials) più sotto. Oppure gioca subito una partita **Casual** senza effettuare il login.
 
 ## React Client Application Routes
 
