@@ -40,8 +40,8 @@ app.use(morgan("dev")); //log delle richieste in console
 const corsOptions = {
   origin: "http://localhost:5173",
   credentials: true, //necessario per i cookie di sessione login
-}; 
-app.use(cors(corsOptions)); 
+};
+app.use(cors(corsOptions));
 
 app.use(session({
   secret: "segreto-battaglia-navale",
@@ -100,7 +100,7 @@ app.post("/api/games", async (req, res) => {
 
 //POST /api/games/:id/shots - lanciamo un siluro 
 app.post("/api/games/:id/shots", async(req, res) => {
-  const gameId = req.params.id; 
+  const gameId = req.params.id; //diverso dal contenuto all'interno del body, in questo caso viene dai parametri 
   const {row, col} = req.body; 
 
   try{

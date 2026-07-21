@@ -66,7 +66,7 @@ function App() {
   }
 
   const handleShoot = async (row, col) => {
-    if(status !== 'playing') return;
+    if(status !== 'playing') return; //ignoriamo lo shot se la partita è terminata
     try {
       const res = await API.fireShot(game.gameId, row, col);
 

@@ -46,7 +46,7 @@ const joinTournament = async (code) => {
         credentials: "include",
         body: JSON.stringify({code}),
     });
-    const data = await response.json();
+    const data = await response.json(); //il server può rispondere con codici di errori specifici ed è per questo che lo leggiamo prima
     if(!response.ok) throw new Error(data.error || "Errore nell'unione al torneo");
     return data;
 };
